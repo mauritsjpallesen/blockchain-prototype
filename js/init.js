@@ -2,11 +2,9 @@
   $(function(){
 
     $('.sidenav').sidenav();
-
-    $(document).ready(function(){
-      $('.tooltipped').tooltip();
-      $('.parallax').parallax();
-    });
+    $('.tooltipped').tooltip();
+    $('.parallax').parallax();
+    $('.modal').modal();
 
   }); // end of document ready
 })(jQuery); // end of jQuery name space
