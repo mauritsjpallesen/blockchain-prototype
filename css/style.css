@@ -16,3 +16,12 @@
 .col img {
   max-width: 100%;
 }
+
+#gamification-stats {
+  background-color: black;
+}
+
+.carousel h2,
+.carousel h1 {
+  color: white;
+}
