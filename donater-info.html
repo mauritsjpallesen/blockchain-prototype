@@ -34,22 +34,22 @@
     </div>
       <!-- Interest counter -->
 
-      <div class="parallax-container center">
-        <br/><br/><br/><br/>
-        <div class="parallax"><img src="https://i.ytimg.com/vi/snZ_y7t0MdQ/maxresdefault.jpg"></div>
-        <h1 class="white-text">Current interest earned in the name of charity</h1>
-        <h1 class="white-text"><span id="donated-interest" class="deep-purple-text text-darken-2">357.9</span> USD</h1>
+      <div id="donater-current-interests-earned" class="center valign-wrapper white-text">
+        <div class="container">
+          <h1>Current interest earned in the name of charity</h1>
+          <h1 class="green-text">$<span id="donated-interest">357.9</span></h1>
+        </div>
       </div>
 
       <br/><br/>
 
       <div class="container">
-        <h2 class="center-align orange-text">Backed Projects</h2>
+        <h2 class="center-align orange-text">Your backed projects</h2>
         <table class="responsive-table striped centered">
         <thead>
           <tr>
               <th>Project Name</th>
-              <th>Locked Amount</th>
+              <th>Liquidity Amount</th>
               <th>Interest Earned</th>
               <th>Project Progress</th>
               <th>Donate More</th>
@@ -64,7 +64,7 @@
             <td>326.3 USD</td>
             <td>16.100 / 23.000 USD</td>
             <td><a class="btn-floating waves-effect waves-light green tooltipped" data-position="right" data-tooltip="Donate more"><i class="material-icons">add</i></a></td>
-            <td><a class="btn-floating waves-effect waves-light red tooltipped" data-position="right" data-tooltip="Retreive money"><i class="material-icons">local_atm</i></a></td>
+            <td><a class="btn-floating waves-effect waves-light red tooltipped modal-trigger" data-position="right" data-tooltip="Retreive assets"><i class="material-icons">local_atm</i></a></td>
           </tr>
           <tr>
             <td>Construction of well in Indonesia</td>
@@ -72,7 +72,7 @@
             <td>6.9 USD</td>
             <td>273 / 1.000 USD</td>
             <td><a class="btn-floating waves-effect waves-light green tooltipped" data-position="right" data-tooltip="Donate more"><i class="material-icons">add</i></a></td>
-            <td><a class="btn-floating waves-effect waves-light red tooltipped" data-position="right" data-tooltip="Retreive money"><i class="material-icons">local_atm</i></a></td>
+            <td><a href="#retreive-eth-modal" class="btn-floating waves-effect waves-light red tooltipped modal-trigger" data-position="right" data-tooltip="Retreive assets"><i class="material-icons">local_atm</i></a></td>
           </tr>
           <tr>
             <td>Upgrade my tractor</td>
@@ -80,7 +80,7 @@
             <td>24.7 USD</td>
             <td>69.128 / 70.000 USD</td>
             <td><a class="btn-floating waves-effect waves-light green tooltipped" data-position="right" data-tooltip="Donate more"><i class="material-icons">add</i></a></td>
-            <td><a class="btn-floating waves-effect waves-light red tooltipped" data-position="right" data-tooltip="Retreive money"><i class="material-icons">local_atm</i></a></td>
+            <td><a class="btn-floating waves-effect waves-light red tooltipped" data-position="right" data-tooltip="Retreive assets"><i class="material-icons">local_atm</i></a></td>
           </tr>
           <tr>
             <td>General Pool</td>
@@ -88,7 +88,7 @@
             <td>73.7 USD</td>
             <td>∞</td>
             <td><a class="btn-floating waves-effect waves-light green tooltipped" data-position="right" data-tooltip="Donate more"><i class="material-icons">add</i></a></td>
-            <td><a class="btn-floating waves-effect waves-light red tooltipped" data-position="right" data-tooltip="Retreive money"><i class="material-icons">local_atm</i></a></td>
+            <td><a class="btn-floating waves-effect waves-light red tooltipped" data-position="right" data-tooltip="Retreive assets"><i class="material-icons">local_atm</i></a></td>
           </tr>
         </tbody>
       </table>
@@ -102,19 +102,64 @@
     <div class="row">
       <div class="col s12 m6 offset-m3">
         <div class="card">
-          <div class="card-image">
-            <img src="https://cgx3j41r03fwkmmdtoy3l6aq-wpengine.netdna-ssl.com/wp-content/uploads/2018/07/cryptocurrency.jpg"/>
-            <span class="card-title orange-text"><b>Current Locked Amount</b></span>
-            <a class="btn-floating halfway-fab waves-effect waves-light red tooltipped" data-position="right" data-tooltip="Donate more"><i class="material-icons">add</i></a>
+          <div class="card-content orange-text">
+            <span class="card-title"><b>Current Amount of Assets Donated</b></span>
+            <div class="center">
+              <h5 class="green-text">$ 3280</h5>
+            </div>
           </div>
-          <div class="card-content center">
-            <h5>3280 USD</h5>
-          </div>
-          <div class="card-action center">
-            <a href="#!" class="btn-large waves-effect waves-light orange" style="width:100%;">Donate Everything</a>
+          <div class="card-action">
+            <div class="row">
+              <div class="col s6">
+                <a href="#!" class="btn-large waves-effect waves-light red" style="width:100%;">Retreive Everything</a>
+              </div>
+              <div class="col s6">
+                <a href="#!" class="btn-large waves-effect waves-light green" style="width:100%;">Donate Everything</a>
+              </div>
+            </div>
           </div>
         </div>
       </div>
+    </div>
+  </diV>
+
+  <div id="retreive-eth-modal" class="modal">
+    <div class="modal-content">
+      <h4 class="orange-text">Retreive assets</h4>
+      <p>
+        Are you sure you want to stop backing the project <i><b>Construction of well in Indonesia</b></i>?
+        <br>
+        The assets will be retreived to the wallet adress below.
+      </p>
+      <div class="row">
+        <form class="col s12">
+          <div class="row">
+            <div class="input-field col s12">
+              <i class="material-icons prefix">account_balance_wallet</i>
+              <input disabled value="0x32Be343B94f860124dC4fEe278FDCBD38C102D88" id="wallet-address" type="text" class="validate">
+              <label for="wallet-address">Wallet address</label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-field col s12">
+              <i class="material-icons prefix"><img src="images/ether.svg"/></i>
+              <input disabled value="150" id="currently-donated-ether" type="text" class="validate">
+              <label for="currently-donated-ether">Currently Donated Ether</label>
+            </div>
+          </div>
+          <div class="row">
+            <div class="input-field col s12">
+              <i class="material-icons prefix">border_color</i>
+              <input id="amount-to-donate" type="number" min="1" max="150" class="validate">
+              <label for="amount-to-donate">Amount to retreive</label>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class="btn modal-close waves-effect waves-green red left">Cancel</a>
+      <a href="#!" class="btn modal-close waves-effect waves-green green">Donate</a>
     </div>
   </div>
 

@@ -21,6 +21,10 @@
   background-color: black;
 }
 
+#donater-current-interests-earned {
+  background-color: #333;
+}
+
 .carousel h2,
 .carousel h1 {
   color: white;
