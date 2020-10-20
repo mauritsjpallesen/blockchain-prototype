@@ -12,8 +12,25 @@ interface CEth {
     function redeemUnderlying(uint) external returns (uint);
 }
 
-/* compound cEth contract address: 0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5
-Found at https://compound.finance/docs#networks */
+/*
+
+compound cEth contract address: 0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5
+Found at https://compound.finance/docs#networks
+
+To use this contract you need a fork of the Ethereuym blockchain.
+So far I've only been able to make it work using software called "ganache-cli".
+
+Download it, set up a new workspace that forks from the following url:
+https://mainnet.infura.io/v3/30c67003826d47e79c3034aafa1654cd
+and also copy the port that ganache-cli uses (both are done in the "server" tab
+when setting up a new work space).
+
+In the remix IDE under "DEPLOY & RUN TRANSACTIONS"
+select Web3 provider as the "ENVIRONMENT" and provide the endpoint in the pop-up
+
+The endpoint is given by ganache-cli
+
+*/
 
 contract CompoundTest {
 
