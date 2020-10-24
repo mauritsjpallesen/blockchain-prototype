@@ -32,10 +32,10 @@ interface CEth {
     function redeemUnderlying(uint) external returns (uint);
 }
 
-contract CompoundTest {
+/* compound cEth contract address: 0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5
+Found at https://compound.finance/docs#networks */
 
-    event log(string, uint256);
-    event addressLog(string, address);
+contract CompoundTest {
 
     address payable constant public freeCharity = 0xE0f5206BBD039e7b0592d8918820024e2a7437b9;
 
@@ -70,15 +70,11 @@ contract CompoundTest {
     function RetrieveDonation(string memory projectId, uint256 amount, address payable _cEtherContract) public
     {
         require(projects[projectId].donations[msg.sender] >= amount, "Cannot retrieve more than the amount that has already been donated");
-        uint256 balanceBeforeWithdraw = address(this).balance;
 
         WithdrawFromCompound(amount, _cEtherContract);
 
-        uint256 balanceAfterWithdraw = address(this).balance;
-        uint256 amountToRetrieve = balanceAfterWithdraw - balanceBeforeWithdraw;
-
-        projects[projectId].donations[msg.sender] -= amountToRetrieve;
-        bool retrieveResult = msg.sender.send(amountToRetrieve);
+        projects[projectId].donations[msg.sender] -= amount;
+        bool retrieveResult = msg.sender.send(amount);
         require(retrieveResult == true, "Failed to transfer retrieved Eth to donor");
     }
 
