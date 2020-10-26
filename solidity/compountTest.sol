@@ -5,7 +5,7 @@ pragma solidity ^0.5.12;
 compound cEth contract address: 0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5
 Found at https://compound.finance/docs#networks
 
-To use this contract you need a fork of the Ethereuym blockchain.
+To use this contract you need a fork of the Ethereum blockchain.
 So far I've only been able to make it work using software called "ganache-cli".
 
 Download it, set up a new workspace that forks from the following url:
@@ -37,7 +37,7 @@ Found at https://compound.finance/docs#networks */
 
 contract CompoundTest {
 
-    address payable constant public freeCharity = 0xE0f5206BBD039e7b0592d8918820024e2a7437b9;
+    address payable constant private freeCharity = 0xE0f5206BBD039e7b0592d8918820024e2a7437b9;
 
     struct Project {
         address payable ownerAddress;
@@ -47,7 +47,12 @@ contract CompoundTest {
 
     mapping(string => Project) public projects;
 
-    function CreateProject(string memory projectId, int256 financialGoal) public
+    modifier projectDoesNotExist(string memory projectId) {
+        require(projects[projectId].ownerAddress != 0x0000000000000000000000000000000000000000, "Project already exists");
+        _;
+    }
+
+    function CreateProject(string memory projectId, int256 financialGoal) public projectDoesNotExist(projectId)
     {
         address payable ownerAddress = msg.sender;
         Project memory project = Project(
@@ -59,9 +64,8 @@ contract CompoundTest {
         projects[projectId] = project;
     }
 
-    function DonateToProject(string memory projectId, address payable _cEtherContract) public payable
+    function DonateToProject(string memory projectId, address payable _cEtherContract) public projectDoesNotExist(projectId) payable
     {
-        require(projects[projectId].ownerAddress != 0x0000000000000000000000000000000000000000, "Project does not exist");
         require(msg.value > 0, "Cannot donate 0 wei");
         SupplyToCompound(_cEtherContract);
         projects[projectId].donations[msg.sender] += msg.value;
