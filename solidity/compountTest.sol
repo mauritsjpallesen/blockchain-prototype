@@ -20,16 +20,16 @@ The endpoint is given by ganache-cli
 
 */
 
+pragma solidity ^0.6.0;
+
 interface CEth {
     function mint() external payable;
-
-    function exchangeRateCurrent() external returns (uint256);
-
-    function supplyRatePerBlock() external returns (uint256);
 
     function redeem(uint) external returns (uint);
 
     function redeemUnderlying(uint) external returns (uint);
+
+    function balanceOfUnderlying(address) external returns (uint);
 }
 
 /* compound cEth contract address: 0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5
@@ -41,34 +41,40 @@ contract CompoundTest {
 
     struct Project {
         address payable ownerAddress;
-        int256 financialGoal;
+        uint256 financialGoal;
+        address[] donors;
         mapping (address => uint256) donations;
     }
 
     mapping(string => Project) public projects;
 
-    modifier projectDoesNotExist(string memory projectId) {
-        require(projects[projectId].ownerAddress != 0x0000000000000000000000000000000000000000, "Project already exists");
+    modifier projectIsNotNull(string memory projectId, string memory message) {
+        require(projects[projectId].ownerAddress != 0x0000000000000000000000000000000000000000, message);
         _;
     }
 
-    function CreateProject(string memory projectId, int256 financialGoal) public projectDoesNotExist(projectId)
+    function CreateProject(string memory projectId, uint256 financialGoal) public
     {
+        require(projects[projectId].ownerAddress == 0x0000000000000000000000000000000000000000, "Project with given ID already exists");
+
         address payable ownerAddress = msg.sender;
+        address[] memory donors;
         Project memory project = Project(
         {
             ownerAddress: ownerAddress,
-            financialGoal: financialGoal
+            financialGoal: financialGoal,
+            donors: donors
         });
 
         projects[projectId] = project;
     }
 
-    function DonateToProject(string memory projectId, address payable _cEtherContract) public projectDoesNotExist(projectId) payable
+    function DonateToProject(string memory projectId, address payable _cEtherContract) public projectIsNotNull(projectId, "The project does not exist") payable
     {
         require(msg.value > 0, "Cannot donate 0 wei");
         SupplyToCompound(_cEtherContract);
         projects[projectId].donations[msg.sender] += msg.value;
+        projects[projectId].donors.push(msg.sender);
     }
 
     function RetrieveDonation(string memory projectId, uint256 amount, address payable _cEtherContract) public
@@ -80,6 +86,33 @@ contract CompoundTest {
         projects[projectId].donations[msg.sender] -= amount;
         bool retrieveResult = msg.sender.send(amount);
         require(retrieveResult == true, "Failed to transfer retrieved Eth to donor");
+    }
+
+    function CompleteProject(string memory projectId, address _cEtherContract) public projectIsNotNull(projectId, "Cannot complete project that does not exist")
+    {
+        Project storage project = projects[projectId];
+
+        uint256 ethAvailableOnCompound = balanceOfUnderlying(_cEtherContract);
+
+        uint256 amountToWithdrawForDonors = 0;
+        for (uint i=0; i < project.donors.length; i++) {
+            amountToWithdrawForDonors += project.donations[project.donors[i]];
+        }
+
+        uint256 totalAmountToRetrieve = ethAvailableOnCompound + project.financialGoal;
+        require(totalAmountToRetrieve > ethAvailableOnCompound, "Overflow");
+        require(totalAmountToRetrieve >= amountToWithdrawForDonors, "Not enough interest has been earned to complete this project");
+
+        WithdrawFromCompound(ethAvailableOnCompound + project.financialGoal, _cEtherContract);
+        for (uint i=0; i < project.donors.length; i++) {
+            address donor = project.donors[i];
+            bool retrieveResult = payable(donor).send(project.donations[donor]);
+            require(retrieveResult == true, "Failed to transfer retrieved Eth to donor");
+            project.donations[project.donors[i]] = 0;
+        }
+
+        bool sendToOwnerResult = project.ownerAddress.send(project.financialGoal);
+        require(sendToOwnerResult == true, "Failed to transfer financialGoal to project owner");
     }
 
     function SupplyToCompound(address payable _cEtherContract) private
@@ -99,10 +132,15 @@ contract CompoundTest {
         return address(this).balance;
     }
 
+    function balanceOfUnderlying(address _cEtherContract) private returns (uint256) {
+        CEth cToken = CEth(_cEtherContract);
+        return cToken.balanceOfUnderlying(address(this));
+    }
+
     function DonationAmount(string memory projectId) public view returns(uint256) {
         return projects[projectId].donations[msg.sender];
     }
 
     // This is needed to receive ETH when calling `redeemCEth`
-    function() external payable { }
+    receive() external payable { }
 }
