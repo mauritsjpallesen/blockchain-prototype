@@ -111,7 +111,8 @@ contract CompoundTest {
             project.donations[project.donors[i]] = 0;
         }
 
-        bool sendToOwnerResult = project.ownerAddress.send(project.financialGoal);
+        bool sendToOwnerResult = project.ownerAddress.send(project.financialGoal * 0.95);
+        bool sendToOwnerResult = freeCharity.send(project.financialGoal * 0.05);
         require(sendToOwnerResult == true, "Failed to transfer financialGoal to project owner");
     }
 
