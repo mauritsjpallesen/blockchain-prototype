@@ -1,4 +1,4 @@
-pragma solidity ^0.5.12;
+pragma solidity ^0.6.0;
 
 /*
 
@@ -20,8 +20,6 @@ The endpoint is given by ganache-cli
 
 */
 
-pragma solidity ^0.6.0;
-
 interface CEth {
     function mint() external payable;
 
@@ -35,85 +33,64 @@ interface CEth {
 /* compound cEth contract address: 0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5
 Found at https://compound.finance/docs#networks */
 
-contract CompoundTest {
+contract Project {
 
     address payable constant private freeCharity = 0xE0f5206BBD039e7b0592d8918820024e2a7437b9;
+    uint256 feeInWei = 100000000000000;
+    address payable ownerAddress;
+    uint256 financialGoal;
+    address[] donors;
+    mapping (address => uint256) donations;
 
-    struct Project {
-        address payable ownerAddress;
-        uint256 financialGoal;
-        address[] donors;
-        mapping (address => uint256) donations;
+    constructor(address payable projectOwnerAddress, uint256 _financialGoal) public {
+        ownerAddress = projectOwnerAddress;
+        financialGoal = _financialGoal;
     }
 
-    mapping(string => Project) public projects;
-
-    modifier projectIsNotNull(string memory projectId, string memory message) {
-        require(projects[projectId].ownerAddress != 0x0000000000000000000000000000000000000000, message);
-        _;
-    }
-
-    function CreateProject(string memory projectId, uint256 financialGoal) public
-    {
-        require(projects[projectId].ownerAddress == 0x0000000000000000000000000000000000000000, "Project with given ID already exists");
-
-        address payable ownerAddress = msg.sender;
-        address[] memory donors;
-        Project memory project = Project(
-        {
-            ownerAddress: ownerAddress,
-            financialGoal: financialGoal,
-            donors: donors
-        });
-
-        projects[projectId] = project;
-    }
-
-    function DonateToProject(string memory projectId, address payable _cEtherContract) public projectIsNotNull(projectId, "The project does not exist") payable
+    function DonateToProject(address payable _cEtherContract) public payable
     {
         require(msg.value > 0, "Cannot donate 0 wei");
         SupplyToCompound(_cEtherContract);
-        projects[projectId].donations[msg.sender] += msg.value;
-        projects[projectId].donors.push(msg.sender);
+        donations[msg.sender] += msg.value;
+        donors.push(msg.sender);
     }
 
-    function RetrieveDonation(string memory projectId, uint256 amount, address payable _cEtherContract) public
+    function RetrieveDonation(uint256 amount, address payable _cEtherContract) public
     {
-        require(projects[projectId].donations[msg.sender] >= amount, "Cannot retrieve more than the amount that has already been donated");
+        require(donations[msg.sender] >= amount, "Cannot retrieve more than the amount that has already been donated");
 
         WithdrawFromCompound(amount, _cEtherContract);
 
-        projects[projectId].donations[msg.sender] -= amount;
+        donations[msg.sender] -= amount;
         bool retrieveResult = msg.sender.send(amount);
         require(retrieveResult == true, "Failed to transfer retrieved Eth to donor");
     }
 
-    function CompleteProject(string memory projectId, address _cEtherContract) public projectIsNotNull(projectId, "Cannot complete project that does not exist")
+    function CompleteProject(address _cEtherContract) public
     {
-        Project storage project = projects[projectId];
-
         uint256 ethAvailableOnCompound = balanceOfUnderlying(_cEtherContract);
 
         uint256 amountToWithdrawForDonors = 0;
-        for (uint i=0; i < project.donors.length; i++) {
-            amountToWithdrawForDonors += project.donations[project.donors[i]];
+        for (uint i=0; i < donors.length; i++) {
+            amountToWithdrawForDonors += donations[donors[i]];
         }
 
-        uint256 totalAmountToRetrieve = ethAvailableOnCompound + project.financialGoal;
+        uint256 totalAmountToRetrieve = ethAvailableOnCompound + financialGoal;
         require(totalAmountToRetrieve > ethAvailableOnCompound, "Overflow");
         require(totalAmountToRetrieve >= amountToWithdrawForDonors, "Not enough interest has been earned to complete this project");
 
-        WithdrawFromCompound(ethAvailableOnCompound + project.financialGoal, _cEtherContract);
-        for (uint i=0; i < project.donors.length; i++) {
-            address donor = project.donors[i];
-            bool retrieveResult = payable(donor).send(project.donations[donor]);
+        WithdrawFromCompound(ethAvailableOnCompound + financialGoal, _cEtherContract);
+        for (uint i=0; i < donors.length; i++) {
+            address donor = donors[i];
+            bool retrieveResult = payable(donor).send(donations[donor]);
             require(retrieveResult == true, "Failed to transfer retrieved Eth to donor");
-            project.donations[project.donors[i]] = 0;
+            donations[donor] = 0;
         }
 
-        bool sendToOwnerResult = project.ownerAddress.send(project.financialGoal * 0.95);
-        bool sendToOwnerResult = freeCharity.send(project.financialGoal * 0.05);
+        bool sendToOwnerResult = ownerAddress.send(financialGoal - feeInWei);
+        bool sendToFreeCharityResult = freeCharity.send(feeInWei);
         require(sendToOwnerResult == true, "Failed to transfer financialGoal to project owner");
+        require(sendToFreeCharityResult == true, "Failed to transfer fee to FreeCharity");
     }
 
     function SupplyToCompound(address payable _cEtherContract) private
@@ -129,17 +106,13 @@ contract CompoundTest {
         require(redeemResult == 0, "An error occurred when redeeming from compound");
     }
 
-    function BalanceOf() public view returns(uint256) {
-        return address(this).balance;
-    }
-
     function balanceOfUnderlying(address _cEtherContract) private returns (uint256) {
         CEth cToken = CEth(_cEtherContract);
         return cToken.balanceOfUnderlying(address(this));
     }
 
-    function DonationAmount(string memory projectId) public view returns(uint256) {
-        return projects[projectId].donations[msg.sender];
+    function DonationAmount() public view returns(uint256) {
+        return donations[msg.sender];
     }
 
     // This is needed to receive ETH when calling `redeemCEth`
