@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity 0.6.0;
 
 /*
 
@@ -36,14 +36,14 @@ Found at https://compound.finance/docs#networks */
 contract Project {
 
     address payable constant private freeCharity = 0xE0f5206BBD039e7b0592d8918820024e2a7437b9;
-    uint256 feeInWei = 100000000000000;
+    uint256 feeInWei = 10000;
     address payable ownerAddress;
     uint256 financialGoal;
     address[] donors;
     mapping (address => uint256) donations;
 
-    constructor(address payable projectOwnerAddress, uint256 _financialGoal) public {
-        ownerAddress = projectOwnerAddress;
+    constructor(uint256 _financialGoal) public {
+        ownerAddress = msg.sender;
         financialGoal = _financialGoal;
     }
 
@@ -75,11 +75,10 @@ contract Project {
             amountToWithdrawForDonors += donations[donors[i]];
         }
 
-        uint256 totalAmountToRetrieve = ethAvailableOnCompound + financialGoal;
-        require(totalAmountToRetrieve > ethAvailableOnCompound, "Overflow");
-        require(totalAmountToRetrieve >= amountToWithdrawForDonors, "Not enough interest has been earned to complete this project");
+        uint256 minimumAmountToRetrieve = amountToWithdrawForDonors + financialGoal + feeInWei;
+        require(minimumAmountToRetrieve <= ethAvailableOnCompound, "Not enough interest has been earned to complete this project");
 
-        WithdrawFromCompound(ethAvailableOnCompound + financialGoal, _cEtherContract);
+        WithdrawFromCompound(ethAvailableOnCompound, _cEtherContract);
         for (uint i=0; i < donors.length; i++) {
             address donor = donors[i];
             bool retrieveResult = payable(donor).send(donations[donor]);
